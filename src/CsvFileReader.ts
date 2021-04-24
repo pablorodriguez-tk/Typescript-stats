@@ -1,10 +1,11 @@
 import fs from "fs";
-import { matchResult } from "./MatchResult";
-import { dateStringToDate } from "./utils";
 
-export class CsvFileReader {
-  data: string[][] = [];
+export abstract class CsvFileReader<T> {
+  data: T[] = [];
   constructor(public filename: string) {}
+
+  abstract mapRow(row: string[]): T;
+
   read(): void {
     this.data = fs
       .readFileSync(this.filename, { encoding: "utf-8" })
@@ -12,16 +13,6 @@ export class CsvFileReader {
       .map((row: string): string[] => {
         return row.split(",");
       })
-      .map((row: string[]): any => {
-        return [
-          dateStringToDate(row[0]),
-          row[1],
-          row[2],
-          parseInt(row[3]),
-          parseInt(row[4]),
-          row[5] as matchResult,
-          row[6],
-        ];
-      });
+      .map(this.mapRow);
   }
 }
